@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -76,10 +77,20 @@ WSGI_APPLICATION = 'flight_tickets_order_system.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'Flights_Order_System',
+        'USER': 'admin',
+        'PASSWORD': '123456',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
     }
 }
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.sqlite3',
+#        'NAME': BASE_DIR / 'db.sqlite3',
+#    }
+#}
 
 
 # Password validation
@@ -100,6 +111,35 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    #'handlers': {
+    #    'file': {
+    #        'level': 'DEBUG',
+    #        'class': 'logging.FileHandler',
+    #        'filename': 'logs.log',
+    #        'formatter': 'verbose',
+    #    },
+    #    'console': {
+    #        'level': 'DEBUG',
+    #        'class': 'logging.StreamHandler',
+    #        'formatter': 'verbose',
+    #    },
+    #},
+    'formatters': {
+        'verbose': {
+            'format': '%(asctime)s - %(levelname)s - %(message)s',
+        },
+    },
+    #'root': {
+    #    'handlers': ['file', '
+    # console'],
+    #    'level': 'DEBUG',
+    #},
+}
+
+DEFAULT_LOGGER = 'flights_order_system.loggers.lggr'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/

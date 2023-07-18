@@ -3,11 +3,11 @@ from .models import UserRole, Users, Adminstrators, Customers, AirLineCompanies,
 
 
 class UserRoleForm(forms.ModelForm):
-    roleName = forms.CharField(
-        widget=forms.TextInput(attrs={'maxlength': 25, 'cols': 40, 'rows': 1}),
-    )
+   #roleName = forms.CharField(
+   #    widget=forms.TextInput(attrs={'maxlength': 25, 'cols': 40, 'rows': 1}),
+   #)
 
     class Meta:
-        model = Users
+        model = UserRole
         fields = '__all__'
   
