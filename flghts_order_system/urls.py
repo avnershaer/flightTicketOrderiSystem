@@ -9,24 +9,29 @@ urlpatterns = [
             name='flights'
             ),
         path(
-            'flight_by_id/<int:flight_id>', 
-            urlViews.get_flight_by_id, 
-            name='flight_by_id'
+            'flight/<int:flight_id>', 
+            urlViews.flight, 
+            name='flight'
             ),
         path(
-            'get_flight_by_origin_country_id/<int:origin_country_id>', 
-            urlViews.get_flight_by_origin_country_id, 
+            'get_flights_by_origin_country_id/<int:origin_country_id>', 
+            urlViews.get_flights_by_origin_country_id, 
             name='get_flight_by_origin_country_id'
             ),
         path(
-            'get_flight_by_destination_country_id/<int:destination_country_id>', 
-            urlViews.get_flight_by_destination_country_id, 
-            name='get_flight_by_destination_country_id'
+            'get_flights_by_destination_country_id/<int:destination_country_id>', 
+            urlViews.get_flights_by_destination_country_id, 
+            name='get_flights_by_destination_country_id'
             ),
         path(
-            'get_flights_by_date/<str:departure_date>', 
-            urlViews.get_flights_by_date, 
-            name='get_flights_by_date'
+            'get_flights_by_departure_date/<str:departure_date>', 
+            urlViews.get_flights_by_departure_date, 
+            name='get_flights_by_departure_date'
+            ),
+        path(
+            'get_flights_by_landing_date/<str:landing_date>', 
+            urlViews.get_flights_by_landing_date, 
+            name='get_flights_by_landing_date'
             ),
         path(
             'get_flights_by_air_line_id/<int:air_line_id>', 
@@ -44,7 +49,7 @@ urlpatterns = [
             name='get_departure_flights_by_country_id'
             ),
         path(
-            'airlines/', 
+            'airlines', 
             urlViews.airlines, 
             name='airlines'
             ),
@@ -59,7 +64,7 @@ urlpatterns = [
             name='get_airline_by_country_id'
             ),
         path(
-            'countries/', 
+            'countries', 
             urlViews.countries, 
             name='countries'
             ),
@@ -69,24 +74,14 @@ urlpatterns = [
             name='country_by_id'
             ),
         path(
-            'create_new_user/', 
-            urlViews.create_new_user, 
-            name='create_new_user'
+            'users', 
+            urlViews.users, 
+            name='users'
             ),
         path(
-            'airline/<int:id>', 
-            urlViews.airline, 
-            name='airline'
-            ),
-        path(
-            'get_my_flights_air_line_id/<int:air_line_id>', 
-            urlViews.get_my_flights_air_line_id, 
-            name='get_my_flights_air_line_id'
-            ),
-        path(
-            'flight/<int:flight_id>', 
-            urlViews.flight, 
-            name='flight'
+            'customers', 
+            urlViews.customers, 
+            name='customers'
             ),
         path(
             'customer/<int:customer_id>', 
@@ -94,12 +89,7 @@ urlpatterns = [
             name='customer'
             ),
         path(
-            'customers/', 
-            urlViews.customers, 
-            name='customers'
-            ),
-        path(
-            'tickets/', 
+            'tickets', 
             urlViews.tickets, 
             name='tickets'
             ),
@@ -114,10 +104,46 @@ urlpatterns = [
             name='get_my_tickets'
             ),
         path(
-            'administrators/', 
+            'get_my_flights/<int:air_line_id>', 
+            urlViews.get_my_flights, 
+            name='get_my_flights'
+            ),
+        path(
+            'airline/<int:air_line_id>', 
+            urlViews.airline, 
+            name='airline'
+            ),
+        path(
+            'administrators', 
             urlViews.administrators, 
             name='administrators'
             ),
+        path(
+            'administrator/<int:admin_id>', 
+            urlViews.administrator, 
+            name='administrator'
+            ),
+
+
+
+        
+        
+        
+        
+        
+        
+        
+        path(
+            'flight/<int:flight_id>', 
+            urlViews.flight, 
+            name='flight'
+            ),
+        
+        
+        
+        
+        
+        
         path(
             'administrator/<int:admin_id>', 
             urlViews.administrator, 

@@ -18,7 +18,7 @@ from ..Serializers import FlightsSerializer
 from django.utils import timezone
 from datetime import timedelta
 from ..validatorsView import GetValidations
-
+from ..operation_funcs import *
     
 logger = lggr()
 errlogger = errLogger()
@@ -27,134 +27,145 @@ validator = GetValidations()
 flight_serializer = FlightsSerializer
 
 
-def serialize_many_true(instance_model, model_serializer, objects):
-    logger.info(f'O.K got {str(instance_model)} objects list from db ')
-    serializer = model_serializer(objects, many=True)
-    logger.info(f'O.K {instance_model} objects been serialized ')
-    return serializer.data
-
-def serialize_data(model_serializer, objects):
-    logger.info(f'O.K got obj : {objects} HTTP/1.1" 200')
-    serializer = model_serializer(objects, many=True)
-    serialized_data = serializer.data
-    logger.info(f'O.K objects been serialized  HTTP/1.1" 200')
-    return serialized_data
 
 
+#def serialize_data2(model_serializer, objects, instance_model):
+#    ok_move_to(model='**********', func='serialize_data2')
+#    logger.info(f'O.K GOT objects HTTP/1.1 200 {instance_model}')
+#    serializer = model_serializer(objects, many=True)
+#    logger.info(f'O.K  objects BEEN SERIALIZED HTTP/1.1 200')
+#    return serializer.data
 
 
 def api_get_list(instance_model, model_serializer):
-    ok_move_to(model='SysApiViews')
+    ok_move_to(model='SysApiViews', func='api_get_list')
     try:
         objects_list = dal.table_objects_list(model=instance_model)
-        check_error = validator.if_isinstance(objects_list)
+        ok_got_back(view='dal', obj=objects_list)
+        check_error = validator.if_isinstance(objects_list) # check if no errors returned (FALSE)
         if check_error == False:
             ok_chek_error_is_false(model='SysApiViews')
-            return serialize_many_true(
-                instance_model, 
-                model_serializer, 
-                objects=objects_list
-                ) 
+            obj_list = serialize_data(model_serializer=model_serializer, instance_model=instance_model, objects=objects_list, many=True)
+            return obj_list
         else:
-            return objects_list
+            return check_error_true(model='SysApiViews', func='api_get_list', obj=objects_list)
     except Exception as e:
         return error_500(e=e, model='SysApiViews')
 
-def api_get_object_by_entity_id(id, instance_model, model_serializer, entity):
+def api_Create_new(data, instance_model, model_serializer):
+    ok_move_to(model='SysApiViews', func='api_Create_new')
     try:
-        objects = dal.get_object_by_entity_id(
-            id = id,
-            model = instance_model,
-            entity = entity
-            )
-        check_error = validator.if_isinstance(objects)
+        new_obj = dal.create_new(**data, model=instance_model)
+        ok_got_back(view='dal', obj=new_obj) 
+        check_error = validator.if_isinstance(new_obj) # check if no errors returned (FALSE)
         if check_error == False:
-            return serialize_data(model_serializer, objects)
+            ok_chek_error_is_false(model='SysApiViews')
+            try:
+                details = serialize_data(model_serializer=model_serializer, instance_model=instance_model,objects=new_obj, many=False)
+                ok_got_back(view='operation_funcs', obj=details)
+                return details
+            except Exception as e:
+                return check_error_true(model='SysApiViews', func='api_Create_new', obj=new_obj)
         else:
-            return objects
+            return new_obj
+    except Exception as e:
+        return error_500(e=e, model='SysApiViews')
+       
+def api_get_object_by_entity_id(id, instance_model, model_serializer, entity):
+    ok_move_to(model='SysApiViews', func='api_get_list')
+    try:
+        obj = dal.get_object_by_entity_id(id=id, model=instance_model, entity=entity)
+        ok_got_back(view='dal', obj=obj)
+        check_error = validator.if_isinstance(obj) # check if no errors returned (FALSE)
+        if check_error == False:
+            ok_chek_error_is_false(model='SysApiViews')
+            return check_one_multi_none(obj=obj, instance_model=instance_model, model_serializer=model_serializer)
+        else:
+            return check_error_true(model='SysApiViews', func='api_get_object_by_entity_id', obj=obj)
     except Exception as e:
         return error_500(e=e, model='SysApiViews')
 
-def api_get_flights_by_date(date, instance_model, model_serializer):
+def api_get_flights_by_date(date, instance_model, model_serializer, time_type):
+    ok_move_to(model='SysApiViews', func='api_get_flights_by_date')
     try:
-        flights = dal.get_flights_by_date(
-        date = date,
-        model = instance_model,
-        )
+        flights = dal.get_flights_by_date(date=date, model=instance_model, time_type=time_type)
+        ok_got_back(view='dal', obj=flights)
+        check_error = validator.if_isinstance(flights) # check if no errors returned (FALSE)
+        if check_error == False:
+            ok_chek_error_is_false(model='SysApiViews')
+            return check_one_multi_none(obj=flights, instance_model=instance_model, model_serializer=model_serializer)
+        else:
+            return check_error_true(model='SysApiViews', func='api_get_object_by_entity_id', obj=flights)
+    except Exception as e:
+        return error_500(e=e, model='SysApiViews')
+    
+def api_get_next_12_hours_flights(entity, model_serializer, instance_model, country_id, country_type):
+    ok_move_to(model='SysApiViews', func='api_get_last_12_hours_flights')
+    try:
+        flights = dal.get_next_12_hours_flights(entity=entity, model=instance_model, country_id=country_id, country_type=country_type)
         check_error = validator.if_isinstance(flights)
         if check_error == False:
-            return serialize_data(model_serializer, flights)
+            ok_chek_error_is_false(model='SysApiViews')
+            return check_one_multi_none(obj=flights, instance_model=instance_model, model_serializer=model_serializer)
         else:
-            return flights
+            return check_error_true(model='SysApiViews', func='api_get_last_12_hours_flights', obj=flights)
     except Exception as e:
         return error_500(e=e, model='SysApiViews')
-    
-def api_get_last_12_hours_flights(
-        entity, model_serializer, 
-        instance_model, country_id, 
-        country_type
-        ):
+ 
+def api_update_instance(validated_data, id, instance_model, model_serializer):
+    ok_move_to(model='SysApiViews', func='api_update_instance')
     try:
-        last12hours = timezone.now() + timedelta(hours=12)
-        objects = dal.get_last_12_hours_flights(
-            entity = entity,
-            model = instance_model,
-            last12hours=last12hours,
-            country_id =country_id,
-            country_type = country_type,
-            )
-        check_error = validator.if_isinstance(objects)
-        if check_error == False:
-            return serialize_data(model_serializer, objects)
-        else:
-            return objects
-    except Exception as e:
-        return error_500(e=e, model='SysApiViews')
-    
-def api_Create_new(data, instance_model, model_serializer):
-    ok_move_to(model='SysApiViews')
-    try:
-        logger.info(f'O.K got valid data {data}')
-        dal.model = instance_model  
-        new_obj = dal.create_new(**data.validated_data, model=instance_model)
-        logger.info(f'OK GOT back the new obj: {new_obj} from database ')
-        #check_error = validator.if_isinstance(new_obj)
-        #if check_error == False:
-        return new_obj
-        #else:
-        #     new_obj
-        #     errlogger.error(f'IF SERIALIZER IS VALID NOT OK - serializer: {new_obj}')
-    except Exception as e:
-        return error_500(e=e, model='SysApiViews')
-
-def api_update_instance(validated_data, id, instance_model, ):
-    ok_move_to(model='SysApiViews')
-    try:
-        logger.info(f'O.K got valid data {validated_data}')
-        dal.model = instance_model
-        updated_obj = dal.Update(id=id, **validated_data.validated_data, model=instance_model)
+        #dal.model = instance_model
+        updated_obj = dal.update(id=id, **validated_data, model=instance_model)
+        ok_got_back(view='dal', obj='updated_obj')
         check_error = validator.if_isinstance(updated_obj)
-        logger.info(f'O.K got data from dal view {updated_obj}')
         if check_error == False:
-            return updated_obj
+            ok_chek_error_is_false(model='SysApiViews')
+            try:
+                details = serialize_data(model_serializer=model_serializer, instance_model=instance_model,objects=updated_obj, many=True)
+                ok_got_back(view='operation_funcs', obj=details)
+                return details 
+            except Exception as e:
+                return check_error_true(model='SysApiViews', func='api_Create_new', obj=updated_obj)
         else:
-            logger.info(f'error with {updated_obj}  at SysApiViews ')
             return updated_obj
     except Exception as e:
        return error_500(e=e, model='SysApiViews')
-
+              
 def api_delete(id, instance_model):
-    ok_move_to(model='API View')
+    ok_move_to(model='API View', func='api_delete')
     try:
-            deleted_object = dal.delete(model=instance_model, id=id)
-            check_error = validator.if_isinstance(objects_list=deleted_object)
-            if check_error == False:
-                ok_chek_error_is_false(model='SysApiView')
-                return  deleted_object
-            else:
-                return deleted_object
+        deleted_object = dal.delete(model=instance_model, id=id)
+        ok_got_back(view='dalView', obj='been removed')
+        return  deleted_object
     except Exception as e:
         return error_500(e=e, model='SysApiView')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

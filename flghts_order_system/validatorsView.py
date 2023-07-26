@@ -84,8 +84,8 @@ class GetValidations:
             raise serializers.ValidationError("Invalid file name. A-z a-z, 0-9, - , _ , and . are allowed.")
         return value
 
-    def if_isinstance(self, objects_list):
-        if isinstance(objects_list, JsonResponse) and 'ERROR' in objects_list.content.decode("utf-8") or 'ERROR' in objects_list:
-            return objects_list  
+    def if_isinstance(self, obj):
+        if isinstance(obj, JsonResponse):
+            return obj 
         else:
             return False

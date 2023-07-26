@@ -30,21 +30,26 @@ facade_base = FacadeBase()
 facade_administrator = AdministratorFacade()
 facade_customer = CustomerFacade()
 facade_airline = AirLinesFacade()
-
+facade_anonymous = AnonymousFacade()
 
 class InstanceData():   
 
     def new_user_data(self, request):
+        ok_move_to(model='InstanceData', func='new_user_data')
         new_user_data = request.data
         user_name = new_user_data.get('user_name')
+        logger.info(f'O.K user_name status HTTP/1.1 200')
         password = new_user_data.get('password')
+        logger.info(f'O.K password status HTTP/1.1 200')
         email = new_user_data.get('email')
-        user_role_id = new_user_data.get('user_role')
+        logger.info(f'O.K email status HTTP/1.1 200')
+        user_role = new_user_data.get('user_role')
+        logger.info(f'O.K user_role status HTTP/1.1 200')
         return {
             'user_name': user_name, 
             'password':password, 
             'email':email, 
-            'user_role_id':user_role_id, 
+            'user_role_id':user_role, 
             }
 
     def airline_data(self, request):
@@ -54,9 +59,9 @@ class InstanceData():
             country_id = airline_data.get('country_id')
             user_id = airline_data.get('user_id')
             return {'air_line_name': air_line_name, 
-                    'airline_logo': airline_logo, 
-                    'country_id': country_id, 
-                    'user_id': user_id 
+                    'company_logo': airline_logo, 
+                    'country_id_id': country_id, 
+                    'user_id_id': user_id 
                     }
     
     def flight_data(self, request):
@@ -70,14 +75,17 @@ class InstanceData():
             return {'departure_time': departure_time, 
                     'landing_time': landing_time, 
                     'remaining_tickects':remaining_tickects,
-                    'air_line_id':air_line_id, 
-                    'origin_country_id':origin_country_id, 
-                    'destination_country_id':destination_country_id    
+                    'air_line_id_id':air_line_id, 
+                    'origin_country_id_id':origin_country_id, 
+                    'destination_country_id_id':destination_country_id    
                     }
     
     def customer_data(self, request):
+            ok_move_to(model='InstanceData', func='customer_data')
             customer_data = request.data
+            logger.info(f'customer data: {customer_data}')
             cust_first_name = customer_data.get('cust_first_name')
+            logger.info(f'cust_first_name: {cust_first_name}')
             cust_last_name = customer_data.get('cust_last_name')
             cust_adress = customer_data.get('cust_adress')
             cust_phone_num = customer_data.get('cust_phone_num')
@@ -89,14 +97,14 @@ class InstanceData():
                 'cust_adress': cust_adress,
                 'cust_phone_num': cust_phone_num,
                 'cust_credit_card_num': cust_credit_card_num,
-                'user_id': user_id,
+                'user_id_id': user_id,
                 }
 
     def ticket_data(self, request):
         ticket_data = request.data
         flight_id = ticket_data.get('flight_id')
         cust_id = ticket_data.get('cust_id')
-        return {'flight_id': flight_id, 'cust_id': cust_id}
+        return {'flight_id_id': flight_id, 'cust_id_id': cust_id}
 
     def administrator_data(self, request):
             administrator_data = request.data
@@ -106,7 +114,7 @@ class InstanceData():
             return {
                 'admin_first_name': admin_first_name, 
                 'admin_last_name': admin_last_name,
-                'user_id': user_id,
+                'user_id_id': user_id,
                 }
 
 
@@ -130,6 +138,19 @@ class InstanceData():
     
 instance_data = InstanceData()
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 csrf_exempt
 @api_view(all_requests)
 def flights(request):
@@ -137,109 +158,106 @@ def flights(request):
     if request.method == 'GET':
         try:
             flights = facade_base.get_all_flights()
-            check_error = validator.if_isinstance(flights)
-            if check_error == False:
-                return status_200_json(object=flights, obj_name='Flights')
-            else:
-                return flights
+            ok_got_back(view='FacadeBase', obj='flights list')
+            return flights
         except Exception as e:
             return error_500(e=e , model='urlViews')
     elif request.method == 'POST':
         try:   
             data = instance_data.flight_data(request=request)
-            logger.info(f'OK GOT VALIDATE 1 DATA URLVIEWS {data}')
+            ok_got_back(view='instance_data', obj=f'data {data}')
             new_flight = facade_airline.add_flight(data)
-            logger.info(f'OK GOT back the new obj: {new_flight} from facadeview ')
-            check_error = validator.if_isinstance(new_flight)
-            if check_error == False:
-                return ok_status_201(object=new_flight)
-            else:
-                return new_flight
+            ok_got_back(view='AirLineFacade', obj='new_flight')
+            return new_flight
         except Exception as e:
-            return error_500(e=e , model='urlViews')
+            return error_500(e=e, model='urlViews')
     else:
         return error_405(request=request)
-
-    
+ 
 @csrf_exempt
 @api_view(all_requests)
-def get_flight_by_id(request, flight_id):
+def flight(request, flight_id):
     got_request(request)
     if request.method == 'GET':
         try:
             flight = facade_base.get_flight_by_id(flight_id)
-            check_error = validator.if_isinstance(flight)
-            if check_error == False:
-                return status_200_json(object=flight, obj_name='Flight')
-            else:
-                return flight
+            ok_got_back(view='FacadeBase', obj='flight')
+            return flight
         except Exception as e:
             return error_500(e=e , model='urlViews')
+    elif request.method == 'PUT':
+        try:
+            updated_flight = facade_airline.update_flight(request.data, flight_id=flight_id)
+            ok_got_back(view='AirLinesFacade', obj='updated_flight')
+            return updated_flight
+        except Exception as e:
+            return error_500(e=e , model='urlViews')  
     elif request.method == 'DELETE':
         try:
             flight_to_remove = facade_airline.remove_flight(flight_id)
-            check_error = validator.if_isinstance(flight_to_remove)
-            if check_error == False:
-                ok_chek_error_is_false(model='urlViews')
-                return flight_to_remove
-            else:
-                return flight_to_remove
+            ok_got_back(view='AirLinesFacade', obj='flight_to_remove')
+            return flight_to_remove
         except Exception as e:
-            return error_500(e=e , model='urlViews')
+            return error_500(e=e, model='urlViews')
     else:
         return error_405(request=request)
 
 @csrf_exempt
 @api_view(all_requests)
-def get_flight_by_origin_country_id(request, origin_country_id):
+def get_flights_by_origin_country_id(request, origin_country_id):
     got_request(request)
     if request.method == 'GET':
         try:
             flights = facade_base.get_flights_by_origin_country_id(origin_country_id)
-            check_error = validator.if_isinstance(flights)
-            if check_error == False:
-                return status_200_json(object=flights, obj_name='Flights')
-            else:
-                return flights
+            ok_got_back(view='FacadeBase', obj='flights')
+            return flights
         except Exception as e:
-            return error_500(e=e , model='urlViews')
+            return error_500(e=e, model='urlViews')
     else:
         return error_405(request=request)
 
 @csrf_exempt
 @api_view(all_requests)
-def get_flight_by_destination_country_id(request, destination_country_id):
+def get_flights_by_destination_country_id(request, destination_country_id):
     got_request(request)
     if request.method == 'GET':
         try:
             flights = facade_base.get_flights_by_destination_country_id(destination_country_id)
-            check_error = validator.if_isinstance(flights)
-            if check_error == False:
-                return status_200_json(object=flights, obj_name='Flights')
-            else:
-                return flights
+            ok_got_back(view='FacadeBase', obj='flights')
+            return flights
         except Exception as e:
-            return error_500(e=e , model='urlViews')
+            return error_500(e=e, model='urlViews')
     else:
         return error_405(request=request)
 
 @csrf_exempt
 @api_view(all_requests)
-def get_flights_by_date(request, departure_date):
+def get_flights_by_departure_date(request, departure_date):
     got_request(request)
     if request.method == 'GET':
         try:
-            flights = facade_base.get_flights_by_date(departure_date)
-            check_error = validator.if_isinstance(flights)
-            if check_error == False:
-                return status_200_json(object=flights, obj_name='Flights')
-            else:
-                return flights
+            flights = facade_base.get_flights_by_departure_date(departure_date)
+            ok_got_back(view='FacadeBase', obj='flights')
+            return flights
         except Exception as e:
-            return error_500(e=e , model='urlViews')
+            return error_500(e=e, model='urlViews')
     else:
         return error_405(request=request)
-    
+
+@csrf_exempt
+@api_view(all_requests)
+def get_flights_by_landing_date(request, landing_date):
+    got_request(request)
+    if request.method == 'GET':
+        try:
+            flights = facade_base.get_flights_by_landing_date(landing_date)
+            ok_got_back(view='FacadeBase', obj='flights')
+            return flights
+        except Exception as e:
+            return error_500(e=e, model='urlViews')
+    else:
+        return error_405(request=request)  
+
 @csrf_exempt
 @api_view(all_requests)
 def get_flights_by_air_line_id(request, air_line_id):
@@ -247,13 +265,10 @@ def get_flights_by_air_line_id(request, air_line_id):
     if request.method == 'GET':
         try:
             flights = facade_base.get_flights_by_air_line_id(air_line_id)
-            check_error = validator.if_isinstance(flights)
-            if check_error == False:
-                return status_200_json(object=flights, obj_name='Flights')
-            else:
-                return flights
+            ok_got_back(view='FacadeBase', obj='flights')
+            return flights
         except Exception as e:
-            return error_500(e=e , model='urlViews')
+            return error_500(e=e, model='urlViews')
     else:
         return error_405(request=request)
 
@@ -264,30 +279,24 @@ def get_arrival_flights_by_country_id(request, destination_country_id):
     if request.method == 'GET':
         try:
             flights = facade_base.get_arrival_flights(destination_country_id)
-            check_error = validator.if_isinstance(flights)
-            if check_error == False:
-                return status_200_json(object=flights, obj_name='Flights')
-            else:
-                return flights
+            ok_got_back(view='FacadeBase', obj='flights')
+            return flights
         except Exception as e:
-            return error_500(e=e , model='urlViews')
+            return error_500(e=e, model='urlViews')
     else:
         return error_405(request=request)   
 
 @csrf_exempt
 @api_view(all_requests)
 def get_departure_flights_by_country_id(request, origin_country_id):
-    logger.info(f'{request.method} request received HTTP/1.1" 100')
+    got_request(request)
     if request.method == 'GET':
         try:
             flights = facade_base.get_departure_flights(origin_country_id)
-            check_error = validator.if_isinstance(flights)
-            if check_error == False:
-                return status_200_json(object=flights, obj_name='Flights')
-            else:
-                return flights
+            ok_got_back(view='FacadeBase', obj='flights')
+            return flights
         except Exception as e:
-            return error_500(e=e , model='urlViews')
+            return error_500(e=e, model='urlViews')
     else:
         return error_405(request=request) 
 
@@ -298,30 +307,23 @@ def airlines(request):
     if request.method == 'GET':
         try:
             airlines = facade_base.get_all_airlines()
-            check_error = validator.if_isinstance(airlines)
-            if check_error == False:
-                return status_200_json(object=airlines, obj_name='Air Lines')
-            else:
-                return airlines
+            ok_got_back(view='FacadeBase', obj='airlines list')
+            return airlines
         except Exception as e:
             return error_500(e=e , model='urlViews')
     elif request.method == 'POST':
         try:   
             data = instance_data.airline_data(request=request)
             validator.validate_name(data['air_line_name'])
-            logger.info(f'OK GOT VALIDATE 1 DATE URLVIEWS {data}')
+            ok_got_back(view='instance_data', obj=f'data {data}')
             new_airline = facade_administrator.add_airline(data)
-            #check_error = validator.if_isinstance(new_user)
-            #if check_error == False:
-            #    logger.info('O.K New user been created HTTP/1.1" 201 ')
-            #    return JsonResponse(new_user, safe=False)
-            #else:
-            return ok_status_201(object=new_airline)
+            ok_got_back(view='AirLineFacade', obj='new_airline')
+            return new_airline
         except Exception as e:
-            return error_500(e=e , model='urlViews')
+            return error_500(e=e, model='urlViews')
     else:
         return error_405(request=request)
-    
+
 @csrf_exempt
 @api_view(all_requests)
 def get_airline_by_id(request, airline_id):
@@ -329,13 +331,10 @@ def get_airline_by_id(request, airline_id):
     if request.method == 'GET':
         try:
             airline = facade_base.get_airline_by_id(airline_id)
-            check_error = validator.if_isinstance(airline)
-            if check_error == False:
-                return status_200_json(object=airline, obj_name='Air Line')
-            else:
-                return airline
+            ok_got_back(view='FacadeBase', obj='airline')
+            return airline
         except Exception as e:
-            return error_500(e=e , model='urlViews')
+            return error_500(e=e, model='urlViews')
     else:
         return error_405(request=request)
 
@@ -346,13 +345,10 @@ def get_airline_by_country_id(request, country_id):
     if request.method == 'GET':
         try:
             airline = facade_base.get_airline_by_country_id(country_id)
-            check_error = validator.if_isinstance(airline)
-            if check_error == False:
-                return status_200_json(object=airline, obj_name='Air Line')
-            else:
-                return airline
+            ok_got_back(view='FacadeBase', obj='airline')
+            return airline
         except Exception as e:
-            return error_500(e=e , model='urlViews')
+            return error_500(e=e, model='urlViews')
     else:
         return error_405(request=request)   
 
@@ -363,15 +359,12 @@ def countries(request):
     if request.method == 'GET':
         try:
             countries = facade_base.get_all_countries()
-            check_error = validator.if_isinstance(countries)
-            if check_error == False:
-                return status_200_json(object=countries, obj_name='Countries')
-            else:
-                return countries
+            ok_got_back(view='FacadeBase', obj='countries list')
+            return countries
         except Exception as e:
-            return error_500(e=e , model='urlViews')
+            return error_500(e=e, model='urlViews')
     else:
-        return error_405(request=request)
+        return error_405(request=request)  
 
 @csrf_exempt
 @api_view(all_requests)
@@ -380,60 +373,155 @@ def get_country_by_id(request, country_id):
     if request.method == 'GET':
         try:
             country = facade_base.get_country_by_id(country_id)
-            check_error = validator.if_isinstance(country)
-            if check_error == False:
-                return status_200_json(object=country, obj_name='Country')
-            else:
-                return country
+            ok_got_back(view='FacadeBase', obj='country')
+            return country
         except Exception as e:
-            return error_500(e=e , model='urlViews')
+            return error_500(e=e, model='urlViews')
     else:
         return error_405(request=request)
- 
-
-# need validators, logs and exceptions
-
 
 @csrf_exempt
 @api_view(all_requests)
-def create_new_user(request):
+def users(request):
     got_request(request)
     if request.method == 'POST':
         try:   
             data = instance_data.new_user_data(request=request)
+            ok_got_back(view='instance_data', obj='data')
             validator.validate_name(data['user_name'])
             validator.validate_email(data['email'])
             validator.validate_password(data['password'])
-            logger.info(f'OK GOT VALIDATE 1 DATE URLVIEWS {data}')
+            ok_vlidate_data(model='urlview', func='users')
             new_user = facade_base.create_new_user(data)
-            check_error = validator.if_isinstance(new_user)
-            if check_error == False:
-                logger.info('O.K New user been created HTTP/1.1" 201 ')
-                return JsonResponse(new_user, safe=False)
-            else:
-                return new_user
+            ok_got_back(view='FacadeBase', obj='new_user')
+            return new_user
         except Exception as e:
-            return error_500(e=e , model='urlViews')
+            return error_500(e=e, model='urlViews')
     else:
         return error_405(request=request)
 
 @csrf_exempt
 @api_view(all_requests)
-def airline(request, id):
-    logger.info(f'{request.method} request received HTTP/1.1" 100')
+def customers(request):
+    got_request(request)
+    if request.method == 'GET':
+        try:
+            customers_list = facade_administrator.get_all_customers()
+            ok_got_back(view='FacadeAdministrator', obj='customers_list')
+            return customers_list
+        except Exception as e:
+            return error_500(e=e, model='urlViews')
+    elif request.method == 'POST':
+        try:   
+            data = instance_data.customer_data(request=request)
+            ok_got_back(view='instance_data', obj=f'data {data}')
+            validator.validate_name(data['cust_first_name'])
+            ok_vlidate_data(model='urlview', func='customers')
+            new_customer = facade_anonymous.add_customer(data)
+            ok_got_back(view='AnonymousFacade', obj='new_customer')
+            return new_customer
+        except Exception as e:
+            return error_500(e=e, model='urlViews')
+    else:
+        return error_405(request=request)
+
+@csrf_exempt
+@api_view(all_requests)
+def customer(request, customer_id):
+    got_request(request)
+    if request.method == 'PUT':
+        try:
+            updated_customer = facade_customer.update_customer(request.data, customer_id=customer_id)
+            ok_got_back(view='CustomerFacade', obj='updated_customer')
+            return updated_customer
+        except Exception as e:
+            return error_500(e=e , model='urlViews')
+    elif request.method == 'DELETE':
+        try:
+            customer_to_remove = facade_administrator.remove_customer(customer_id)
+            ok_got_back(view='AdministratorFacade', obj='customer_to_remove')
+            return customer_to_remove
+        except Exception as e:
+            return error_500(e=e, model='urlViews')
+    else:
+        return error_405(request=request)
+
+csrf_exempt
+@api_view(all_requests)
+def tickets(request):
+    got_request(request)
+    if request.method == 'GET':
+        try:
+            tickets_list = facade_customer.add_ticket()
+            ok_got_back(view='CustomerFacade', obj='tickets_list')
+            return tickets_list
+        except Exception as e:
+            return error_500(e=e, model='urlViews')
+    elif request.method == 'POST':
+        try:   
+            data = instance_data.ticket_data(request=request)
+            ok_got_back(view='instance_data', obj=f'data {data}')
+            new_ticket = facade_customer.add_ticket(data)
+            ok_got_back(view='CustomerFacade', obj='new_ticket')
+            return new_ticket
+        except Exception as e:
+            return error_500(e=e, model='urlViews')
+    else:
+        return error_405(request=request)
+
+csrf_exempt
+@api_view(all_requests)
+def ticket(request, ticket_id):
+    got_request(request)
+    if request.method == 'DELETE':
+        try:
+            ticket_to_remove = facade_customer.remove_ticket(ticket_id)
+            ok_got_back(view='CustomerFacade', obj='ticket_to_remove')
+            return ticket_to_remove
+        except Exception as e:
+            return error_500(e=e, model='urlViews')
+    else:
+        return error_405(request=request)
+
+@csrf_exempt
+@api_view(all_requests)
+def get_my_tickets(request, cust_id):
+    got_request(request)
+    if request.method == 'GET':
+        try:
+            my_tickets = facade_customer.get_my_tickets(cust_id)
+            ok_got_back(view='CustomerFacade', obj='my_tickets')
+            return my_tickets
+        except Exception as e:
+            return error_500(e=e, model='urlViews')
+    else:
+        return error_405(request=request)
+
+@csrf_exempt
+@api_view(all_requests)
+def get_my_flights(request, air_line_id):
+    got_request(request)
+    if request.method == 'GET':
+        try:
+            my_flights = facade_airline.get_my_flights(air_line_id)
+            ok_got_back(view='CustomerFacade', obj='my_flights')
+            return my_flights
+        except Exception as e:
+            return error_500(e=e, model='urlViews')
+    else:
+        return error_405(request=request)
+
+@csrf_exempt
+@api_view(all_requests)
+def airline(request, air_line_id):
+    got_request(request)
     if request.method == 'PUT':
         try:
             data = instance_data.airline_data(request=request)
-            validator.validate_name(data['airline_name'])
-            updated_airline = facade_airline.update_airline(
-                request.data, 
-                airline_id = id
-                )
-            check_error = validator.if_isinstance(updated_airline)
-            if check_error == False:
-                return status_200_json(object=updated_airline, obj_name='Updated Air Line')
-            else:
-                return updated_airline
+            validator.validate_name(data['air_line_name'])
+            updated_airline = facade_airline.update_airline(request.data, air_line_id=air_line_id)
+            ok_got_back(view='CustomerFacade', obj='updated_airline')
+            return updated_airline
         except Exception as e:
             return error_500(e=e , model='urlViews')
     elif request.method == 'GET':
@@ -448,89 +536,103 @@ def airline(request, id):
             return error_500(e=e , model='urlViews')
     if request.method == 'DELETE':
         try:
-            airline_to_remove = facade_administrator.remove_airline(id)
-            return ok_status_200(object=airline_to_remove, obj_name='deleted Air Line')
-            #check_error = validator.if_isinstance(ticket_to_remove)
-            #if check_error == False:
-            #    ok_chek_error_is_false(model='urlViews')
-            #    return ticket_to_remove
-            #else:
-            #    return ticket_to_remove
+            airline_to_remove = facade_administrator.remove_airline(air_line_id)
+            ok_got_back(view='CustomerFacade', obj='airline_to_remove')
+            return airline_to_remove
         except Exception as e:
             return error_500(e=e , model='urlViews')
     else:
         return error_405(request=request)
+
+@csrf_exempt
+@api_view(all_requests)
+def administrators(request):
+    got_request(request)
+    if request.method == 'POST':
+        try:   
+            data = instance_data.administrator_data(request=request)
+            ok_got_back(view='instance_data', obj=f'data {data}')
+            validator.validate_name(data['admin_first_name'])
+            new_administrator = facade_administrator.add_administrator(data)
+            ok_got_back(view='AdministratorFacade', obj='new_administrator')
+            return new_administrator
+        except Exception as e:
+            return error_500(e=e, model='urlViews')
+    else:
+        return error_405(request=request)
+
+@csrf_exempt
+@api_view(all_requests)
+def administrator(request, admin_id):
+    got_request(request)
+    if request.method == 'DELETE':
+        try:
+            administrator_to_remove = facade_administrator.remove_administrator(admin_id)
+            ok_got_back(view='CustomerFacade', obj='airline_to_remove')
+            return administrator_to_remove
+        except Exception as e:
+            return error_500(e=e , model='urlViews')
+    else:
+        return error_405(request=request)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+
+ 
+
+# need validators, logs and exceptions
+
+
+
+
 
   
 
-@csrf_exempt
-@api_view(all_requests)
-def flight(request, flight_id):
-    got_request(request)
-    if request.method == 'PUT':
-        try:
-            updated_flight = facade_airline.update_flight(
-                request.data, 
-                flight_id = flight_id
-                )
-            check_error = validator.if_isinstance(updated_flight)
-            if check_error == False:
-                return status_200_json(object=updated_flight, obj_name='Updated Air Line')
-            else:
-                return updated_flight
-        except Exception as e:
-            return error_500(e=e , model='urlViews')
-######## end of need validators, logs and exceptions
 
 
-@csrf_exempt
-@api_view(all_requests)
-def get_my_flights_air_line_id(request, air_line_id):
-    got_request(request)
-    if request.method == 'GET':
-        try:
-            flights = facade_airline.get_my_flights_air_line_id(air_line_id)
-            check_error = validator.if_isinstance(flights)
-            if check_error == False:
-                return status_200_json(object=flights, obj_name='Flights')
-            else:
-                return flights
-        except Exception as e:
-            return error_500(e=e , model='urlViews')
-    else:
-        return error_405(request=request)
 
-@csrf_exempt
-@api_view(all_requests)
-def customer(request, customer_id):
-    got_request(request)
-    if request.method == 'PUT':
-        try:
-            updated_customer = facade_customer.update_customer(
-                request.data, 
-                customer_id = customer_id
-                )
-            check_error = validator.if_isinstance(updated_customer)
-            if check_error == False:
-                return status_200_json(object=updated_customer, obj_name='Updated Customer')
-            else:
-                return updated_customer
-        except Exception as e:
-            return error_500(e=e , model='urlViews')
-    elif request.method == 'DELETE':
-        try:
-            customer_to_remove = facade_administrator.remove_customer(customer_id)
-            return ok_status_200(object=customer_to_remove, obj_name='deleted customer')
-            #check_error = validator.if_isinstance(ticket_to_remove)
-            #if check_error == False:
-            #    ok_chek_error_is_false(model='urlViews')
-            #    return ticket_to_remove
-            #else:
-            #    return ticket_to_remove
-        except Exception as e:
-            return error_500(e=e , model='urlViews')
-    else:
-        return error_405(request=request)
+
+
 #   elif request.method == 'GET':
 #       try:
 #           airline = facade_base.get_airline_by_id(id)
@@ -559,79 +661,6 @@ def customer(request, customer_id):
 #   else:
 #      return error_405(request=request)
 
-@csrf_exempt
-@api_view(all_requests)
-def customers(request):
-    got_request(request)
-    if request.method == 'GET':
-        try:
-            customers_list = facade_administrator.get_all_customers()
-            check_error = validator.if_isinstance(customers_list)
-            if check_error == False:
-                ok_chek_error_is_false(model='urlViews')
-                return status_200_json(object=customers_list, obj_name='Customers')
-            else:
-                return countries
-        except Exception as e:
-            return error_500(e=e , model='urlViews')
-    elif request.method == 'POST':
-        try:   
-            data = instance_data.customer_data(request=request)
-            validator.validate_name(data['cust_first_name'])
-            logger.info(f'OK GOT VALIDATE 1 DATE URLVIEWS {data}')
-            new_customer = facade_administrator.add_customer(data)
-            #check_error = validator.if_isinstance(new_user)
-            #if check_error == False:
-            #    logger.info('O.K New user been created HTTP/1.1" 201 ')
-            #    return JsonResponse(new_user, safe=False)
-            #else:
-            return ok_status_201(object=new_customer)
-        except Exception as e:
-            return error_500(e=e , model='urlViews')
-    else:
-        return error_405(request=request)
-
-
-@csrf_exempt
-@api_view(all_requests)
-def administrators(request):
-    got_request(request)
-    if request.method == 'POST':
-        try:   
-            data = instance_data.administrator_data(request=request)
-            validator.validate_name(data['admin_first_name'])
-            logger.info(f'OK GOT VALIDATE 1 DATE URLVIEWS {data}')
-            new_administrator = facade_administrator.add_administrator(data)
-            #check_error = validator.if_isinstance(new_user)
-            #if check_error == False:
-            #    logger.info('O.K New user been created HTTP/1.1" 201 ')
-            #    return JsonResponse(new_user, safe=False)
-            #else:
-            return ok_status_201(object=new_administrator)
-        except Exception as e:
-            return error_500(e=e , model='urlViews')
-    else:
-        return error_405(request=request)
-
-
-@csrf_exempt
-@api_view(all_requests)
-def administrator(request, admin_id):
-    got_request(request)
-    if request.method == 'DELETE':
-        try:
-            administrator_to_remove = facade_administrator.remove_administrator(admin_id)
-            return ok_status_200(object=administrator_to_remove, obj_name='deleted Administrator')
-            #check_error = validator.if_isinstance(ticket_to_remove)
-            #if check_error == False:
-            #    ok_chek_error_is_false(model='urlViews')
-            #    return ticket_to_remove
-            #else:
-            #    return ticket_to_remove
-        except Exception as e:
-            return error_500(e=e , model='urlViews')
-    else:
-        return error_405(request=request)
 
 
 
@@ -642,72 +671,17 @@ def administrator(request, admin_id):
 
 
 
-csrf_exempt
-@api_view(all_requests)
-def tickets(request):
-    got_request(request)
-    #if request.method == 'GET':
-    #    try:
-    #        flights = facade_base.get_all_flights()
-    #        check_error = validator.if_isinstance(flights)
-    #        if check_error == False:
-    #            return status_200_json(object=flights, obj_name='Flights')
-    #        else:
-    #            return flights
-    #    except Exception as e:
-    #        return error_500(e=e , model='urlViews')
-    if request.method == 'POST':
-        try:   
-            data = instance_data.ticket_data(request=request)
-            logger.info(f'OK GOT VALIDATE 1 DATA URLVIEWS {data}')
-            new_ticket = facade_customer.add_ticket(data)
-            logger.info(f'OK GOT back the new obj: {new_ticket} from facadeview ')
-            check_error = validator.if_isinstance(new_ticket)
-            if check_error == False:
-                return ok_status_201(object=new_ticket)
-            else:
-                return new_ticket
-        except Exception as e:
-            return error_500(e=e , model='urlViews')
-    else:
-        return error_405(request=request)
 
 
-csrf_exempt
-@api_view(all_requests)
-def ticket(request, ticket_id):
-    got_request(request)
-    if request.method == 'DELETE':
-        try:
-            ticket_to_remove = facade_customer.remove_ticket(ticket_id)
-            return ok_status_200(object=ticket_to_remove, obj_name='deleted ticket')
-            #check_error = validator.if_isinstance(ticket_to_remove)
-            #if check_error == False:
-            #    ok_chek_error_is_false(model='urlViews')
-            #    return ticket_to_remove
-            #else:
-            #    return ticket_to_remove
-        except Exception as e:
-            return error_500(e=e , model='urlViews')
-    else:
-        return error_405(request=request)
 
-@csrf_exempt
-@api_view(all_requests)
-def get_my_tickets(request, cust_id):
-    logger.info(f'{request.method} request received HTTP/1.1" 100')
-    if request.method == 'GET':
-        try:
-            tickets = facade_customer.get_my_tickets(cust_id)
-            if isinstance(tickets, JsonResponse) and "ERROR" in tickets.content.decode("utf-8"):
-                return tickets
-            else:
-                logger.info(f'O.K got flight details HTTP/1.1" 200')
-                return JsonResponse({'tickets': tickets}, status=200)
-        except Exception as e:
-            return error_500(e=e , model='urlViews')
-    else:
-        return error_405(request=request)
+
+
+
+
+
+
+
+
 
 
 
