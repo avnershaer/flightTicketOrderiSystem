@@ -111,7 +111,15 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LOGGING = {
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+# Set the session to expire when user browser is closed
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+LOGGINSG = {
     'version': 1,
     'disable_existing_loggers': False,
     #'handlers': {

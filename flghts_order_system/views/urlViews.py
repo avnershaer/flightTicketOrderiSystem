@@ -1,7 +1,10 @@
 from django.shortcuts import render, HttpResponse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes
+from rest_framework import status
+from django.contrib.auth import authenticate
 from ..models import UserRole
 from ..Serializers import *
 from rest_framework.decorators import api_view
@@ -52,33 +55,9 @@ class InstanceData():
             'user_role_id':user_role, 
             }
 
-    def airline_data(self, request):
-            airline_data = request.data
-            air_line_name = airline_data.get('air_line_name')
-            airline_logo = airline_data.get('company_logo')
-            country_id = airline_data.get('country_id')
-            user_id = airline_data.get('user_id')
-            return {'air_line_name': air_line_name, 
-                    'company_logo': airline_logo, 
-                    'country_id_id': country_id, 
-                    'user_id_id': user_id 
-                    }
     
-    def flight_data(self, request):
-            flight_data = request.data
-            departure_time = flight_data.get('departure_time')
-            landing_time = flight_data.get('landing_time')
-            remaining_tickects = flight_data.get('remaining_tickects')
-            air_line_id = flight_data.get('air_line_id')
-            origin_country_id = flight_data.get('origin_country_id')
-            destination_country_id = flight_data.get('destination_country_id')
-            return {'departure_time': departure_time, 
-                    'landing_time': landing_time, 
-                    'remaining_tickects':remaining_tickects,
-                    'air_line_id_id':air_line_id, 
-                    'origin_country_id_id':origin_country_id, 
-                    'destination_country_id_id':destination_country_id    
-                    }
+    
+    
     
     def customer_data(self, request):
             ok_move_to(model='InstanceData', func='customer_data')
@@ -100,12 +79,7 @@ class InstanceData():
                 'user_id_id': user_id,
                 }
 
-    def ticket_data(self, request):
-        ticket_data = request.data
-        flight_id = ticket_data.get('flight_id')
-        cust_id = ticket_data.get('cust_id')
-        return {'flight_id_id': flight_id, 'cust_id_id': cust_id}
-
+    
     def administrator_data(self, request):
             administrator_data = request.data
             admin_first_name = administrator_data.get('admin_first_name')
@@ -117,6 +91,14 @@ class InstanceData():
                 'user_id_id': user_id,
                 }
 
+    def login_data(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        logger.info(f'username = {username} password = {password}')
+        return {
+            'username': username,
+            'password': password 
+            }
 
 
 
@@ -146,12 +128,82 @@ instance_data = InstanceData()
 
 
 
+ 
+        #if user is not None:
+        #    CheckUserRoleView.get(request=request)
+        #    # Authentication successful
+        #    #return Response({'message': 'Authentication successful', 'user_id': user.user_id}, status=status.HTTP_200_OK)
+        #else:
+        #    logger.info(f'user != authenticate ')
+        #    # Authentication failed
+        #    return JsonResponse({'message': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+            
+               
+                  
+ 
+    
 
 
 
 
 
-csrf_exempt
+
+@permission_classes([IsAuthenticated])
+class CheckUserRoleView(APIView):
+    def get(self, request):
+        user = request.user
+        role_name = user.user_role.role_name
+        # Check the user role and return response based on the role
+        if role_name == 'Customer':
+            return JsonResponse({'message': 'Customer role authenticated'}, status=status.HTTP_200_OK)
+        elif role_name == 'Air Line Company':
+            return JsonResponse({'message': 'Administrator role authenticated'}, status=status.HTTP_200_OK)
+        elif role_name == 'Administrator':
+            return JsonResponse({'message': 'Administrator role authenticated'}, status=status.HTTP_200_OK)
+        else:
+            return JsonResponse({'message': 'Unauthorized role'}, status=status.HTTP_403_FORBIDDEN)
+
+
+
+    
+
+
+
+
+
+
+
+
+@csrf_exempt
+@api_view(all_requests)
+def login(request):
+    got_request(request)
+    if request.method == 'POST':
+        try:
+            data = instance_data.login_data(request=request)
+            user = facade_anonymous.login(request, **data)
+            ok_got_back(view='AnonymousFacade', obj=user)
+            return user
+        except Exception as e:
+            return error_500(e=e, model='urlViews')
+    else:
+        return error_405(request=request)
+    
+@csrf_exempt
+@api_view(all_requests)
+def logout(request):
+    got_request(request)
+    if request.method == 'GET':
+        try:
+            request.session.flush()
+            return ok_logout()
+        except Exception as e:
+            return error_500(e=e , model='urlViews')
+    else:
+        return error_405(request=request)    
+
+@csrf_exempt
 @api_view(all_requests)
 def flights(request):
     got_request(request)
@@ -164,9 +216,9 @@ def flights(request):
             return error_500(e=e , model='urlViews')
     elif request.method == 'POST':
         try:   
-            data = instance_data.flight_data(request=request)
-            ok_got_back(view='instance_data', obj=f'data {data}')
-            new_flight = facade_airline.add_flight(data)
+            #data = instance_data.flight_data(request=request)
+            #ok_got_back(view='instance_data', obj=f'data {data}')
+            new_flight = facade_airline.add_flight(request=request)
             ok_got_back(view='AirLineFacade', obj='new_flight')
             return new_flight
         except Exception as e:
@@ -187,14 +239,14 @@ def flight(request, flight_id):
             return error_500(e=e , model='urlViews')
     elif request.method == 'PUT':
         try:
-            updated_flight = facade_airline.update_flight(request.data, flight_id=flight_id)
+            updated_flight = facade_airline.update_flight(request=request, flight_id=flight_id)
             ok_got_back(view='AirLinesFacade', obj='updated_flight')
             return updated_flight
         except Exception as e:
             return error_500(e=e , model='urlViews')  
     elif request.method == 'DELETE':
         try:
-            flight_to_remove = facade_airline.remove_flight(flight_id)
+            flight_to_remove = facade_airline.remove_flight(request=request, flight_id=flight_id)
             ok_got_back(view='AirLinesFacade', obj='flight_to_remove')
             return flight_to_remove
         except Exception as e:
@@ -316,7 +368,7 @@ def airlines(request):
             data = instance_data.airline_data(request=request)
             validator.validate_name(data['air_line_name'])
             ok_got_back(view='instance_data', obj=f'data {data}')
-            new_airline = facade_administrator.add_airline(data)
+            new_airline = facade_administrator.add_airline(request=request, data=data )
             ok_got_back(view='AirLineFacade', obj='new_airline')
             return new_airline
         except Exception as e:
@@ -385,28 +437,29 @@ def get_country_by_id(request, country_id):
 def users(request):
     got_request(request)
     if request.method == 'POST':
-        try:   
-            data = instance_data.new_user_data(request=request)
-            ok_got_back(view='instance_data', obj='data')
-            validator.validate_name(data['user_name'])
-            validator.validate_email(data['email'])
-            validator.validate_password(data['password'])
-            ok_vlidate_data(model='urlview', func='users')
-            new_user = facade_base.create_new_user(data)
-            ok_got_back(view='FacadeBase', obj='new_user')
-            return new_user
-        except Exception as e:
-            return error_500(e=e, model='urlViews')
+        pass
+        #try:   
+        #    data = instance_data.new_user_data(request=request)
+        #    ok_got_back(view='instance_data', obj='data')
+        #    validator.validate_name(data['user_name'])
+        #    validator.validate_email(data['email'])
+        #    validator.validate_password(data['password'])
+        #    ok_vlidate_data(model='urlview', func='users')
+        #    new_user = facade_base.create_new_user(data)
+        #    ok_got_back(view='FacadeBase', obj='new_user')
+        #    return new_user
+        #except Exception as e:
+        #    return error_500(e=e, model='urlViews')
     else:
         return error_405(request=request)
 
-@csrf_exempt
+
 @api_view(all_requests)
 def customers(request):
     got_request(request)
     if request.method == 'GET':
         try:
-            customers_list = facade_administrator.get_all_customers()
+            customers_list = facade_administrator.get_all_customers(request)
             ok_got_back(view='FacadeAdministrator', obj='customers_list')
             return customers_list
         except Exception as e:
@@ -415,11 +468,15 @@ def customers(request):
         try:   
             data = instance_data.customer_data(request=request)
             ok_got_back(view='instance_data', obj=f'data {data}')
-            validator.validate_name(data['cust_first_name'])
-            ok_vlidate_data(model='urlview', func='customers')
-            new_customer = facade_anonymous.add_customer(data)
-            ok_got_back(view='AnonymousFacade', obj='new_customer')
-            return new_customer
+            is_none = check_if_None(data=data, model='customers')
+            if is_none == False:
+                validator.validate_name(data['cust_first_name'])
+                ok_vlidate_data(model='urlview', func='customers')
+                new_customer = facade_anonymous.add_customer(data)
+                ok_got_back(view='AnonymousFacade', obj='new_customer')
+                return new_customer
+            else:
+                return error_404(e=None, obj=data, model='customers')
         except Exception as e:
             return error_500(e=e, model='urlViews')
     else:
@@ -431,14 +488,14 @@ def customer(request, customer_id):
     got_request(request)
     if request.method == 'PUT':
         try:
-            updated_customer = facade_customer.update_customer(request.data, customer_id=customer_id)
+            updated_customer = facade_customer.update_customer(request=request, data=request.data, customer_id=customer_id)
             ok_got_back(view='CustomerFacade', obj='updated_customer')
             return updated_customer
         except Exception as e:
             return error_500(e=e , model='urlViews')
     elif request.method == 'DELETE':
         try:
-            customer_to_remove = facade_administrator.remove_customer(customer_id)
+            customer_to_remove = facade_administrator.remove_customer(request=request, customer_id=customer_id)
             ok_got_back(view='AdministratorFacade', obj='customer_to_remove')
             return customer_to_remove
         except Exception as e:
@@ -452,16 +509,14 @@ def tickets(request):
     got_request(request)
     if request.method == 'GET':
         try:
-            tickets_list = facade_customer.add_ticket()
+            tickets_list = facade_administrator.get_all_tickets()
             ok_got_back(view='CustomerFacade', obj='tickets_list')
             return tickets_list
         except Exception as e:
             return error_500(e=e, model='urlViews')
     elif request.method == 'POST':
         try:   
-            data = instance_data.ticket_data(request=request)
-            ok_got_back(view='instance_data', obj=f'data {data}')
-            new_ticket = facade_customer.add_ticket(data)
+            new_ticket = facade_customer.add_ticket(request=request)
             ok_got_back(view='CustomerFacade', obj='new_ticket')
             return new_ticket
         except Exception as e:
@@ -475,7 +530,7 @@ def ticket(request, ticket_id):
     got_request(request)
     if request.method == 'DELETE':
         try:
-            ticket_to_remove = facade_customer.remove_ticket(ticket_id)
+            ticket_to_remove = facade_customer.remove_ticket(request=request, ticket_id=ticket_id)
             ok_got_back(view='CustomerFacade', obj='ticket_to_remove')
             return ticket_to_remove
         except Exception as e:
@@ -485,11 +540,11 @@ def ticket(request, ticket_id):
 
 @csrf_exempt
 @api_view(all_requests)
-def get_my_tickets(request, cust_id):
+def get_my_tickets(request):
     got_request(request)
     if request.method == 'GET':
         try:
-            my_tickets = facade_customer.get_my_tickets(cust_id)
+            my_tickets = facade_customer.get_my_tickets(request=request)
             ok_got_back(view='CustomerFacade', obj='my_tickets')
             return my_tickets
         except Exception as e:
@@ -499,12 +554,12 @@ def get_my_tickets(request, cust_id):
 
 @csrf_exempt
 @api_view(all_requests)
-def get_my_flights(request, air_line_id):
+def get_my_flights(request):
     got_request(request)
     if request.method == 'GET':
         try:
-            my_flights = facade_airline.get_my_flights(air_line_id)
-            ok_got_back(view='CustomerFacade', obj='my_flights')
+            my_flights = facade_airline.get_my_flights(request=request)
+            ok_got_back(view='AirLinesFacade', obj='my_flights')
             return my_flights
         except Exception as e:
             return error_500(e=e, model='urlViews')
@@ -517,9 +572,7 @@ def airline(request, air_line_id):
     got_request(request)
     if request.method == 'PUT':
         try:
-            data = instance_data.airline_data(request=request)
-            validator.validate_name(data['air_line_name'])
-            updated_airline = facade_airline.update_airline(request.data, air_line_id=air_line_id)
+            updated_airline = facade_airline.update_airline(request=request, air_line_id=air_line_id)
             ok_got_back(view='CustomerFacade', obj='updated_airline')
             return updated_airline
         except Exception as e:
@@ -536,7 +589,7 @@ def airline(request, air_line_id):
             return error_500(e=e , model='urlViews')
     if request.method == 'DELETE':
         try:
-            airline_to_remove = facade_administrator.remove_airline(air_line_id)
+            airline_to_remove = facade_administrator.remove_airline(request=request, airline_id=air_line_id)
             ok_got_back(view='CustomerFacade', obj='airline_to_remove')
             return airline_to_remove
         except Exception as e:
@@ -552,8 +605,8 @@ def administrators(request):
         try:   
             data = instance_data.administrator_data(request=request)
             ok_got_back(view='instance_data', obj=f'data {data}')
-            validator.validate_name(data['admin_first_name'])
-            new_administrator = facade_administrator.add_administrator(data)
+            #validator.validate_name(data['admin_first_name'])
+            new_administrator = facade_administrator.add_administrator(request=request, data=data)
             ok_got_back(view='AdministratorFacade', obj='new_administrator')
             return new_administrator
         except Exception as e:
@@ -567,7 +620,7 @@ def administrator(request, admin_id):
     got_request(request)
     if request.method == 'DELETE':
         try:
-            administrator_to_remove = facade_administrator.remove_administrator(admin_id)
+            administrator_to_remove = facade_administrator.remove_administrator(request=request, admin_id=admin_id)
             ok_got_back(view='CustomerFacade', obj='airline_to_remove')
             return administrator_to_remove
         except Exception as e:

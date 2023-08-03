@@ -99,12 +99,12 @@ urlpatterns = [
             name='ticket'
             ),
         path(
-            'get_my_tickets/<int:cust_id>', 
+            'get_my_tickets/', 
             urlViews.get_my_tickets, 
             name='get_my_tickets'
             ),
         path(
-            'get_my_flights/<int:air_line_id>', 
+            'get_my_flights/', 
             urlViews.get_my_flights, 
             name='get_my_flights'
             ),
@@ -124,15 +124,29 @@ urlpatterns = [
             name='administrator'
             ),
 
+        path(
+            'login', 
+            urlViews.login, 
+            name='login'
+            ),
+        path(
+            'logout', 
+            urlViews.logout, 
+            name='logout'
+            ),
+        
+        
+        
+        
+        
+        
+        
 
 
-        
-        
-        
-        
-        
-        
-        
+
+
+
+
         path(
             'flight/<int:flight_id>', 
             urlViews.flight, 

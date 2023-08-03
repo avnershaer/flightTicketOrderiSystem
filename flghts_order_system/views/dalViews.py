@@ -190,8 +190,10 @@ class Dal(View):
     
         
     def get_object_by_username(self, model, name):
+        ok_move_to(model='DAL View', func='get_object_by_username')
         try:
-            obj = model.objects.select_related('user_id').get(user_id__user_name__iexact=name)
+            obj = model.objects.get(user_name__iexact=name)
+            #obj = model.objects.select_related('user_id').get(user_id__user_name__iexact=name)
             if obj:
                 logger.info(f'O.K got obj from database:{obj} HTTP/1.1" 200')
                 return obj

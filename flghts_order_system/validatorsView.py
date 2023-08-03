@@ -11,6 +11,12 @@ logger = lggr()
 
 
 
+def check_if_None(data, model):
+    if None in data.values():
+        return True
+    else:
+        return False
+    
 
 class GetValidations:
     

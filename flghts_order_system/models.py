@@ -1,6 +1,6 @@
 from django.db import models
 from django.core import validators
-
+from django.contrib.auth.hashers import check_password
 
 class UserRole(models.Model):
     role_id = models.AutoField(primary_key=True)
@@ -19,6 +19,10 @@ class Users(models.Model):
     def __str__(self) -> str:
         return self.user_name
 
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.password)
+    
+    
 class Adminstrators(models.Model):
     admin_id = models.BigAutoField(primary_key=True)
     admin_first_name = models.CharField(max_length=100, blank=False, null=False, default='') 
@@ -53,7 +57,7 @@ class AirLineCompanies(models.Model):
     air_line_name = models.CharField(max_length=100, unique=True)
     country_id = models.ForeignKey(Countries, on_delete=models.CASCADE)
     user_id = models.ForeignKey(Users, on_delete=models.CASCADE)
-    company_logo = models.ImageField(upload_to='images/companies_logos/', default='')
+    company_logo = models.ImageField(upload_to='images/companies_logos/', default='',  blank=True, null=True)
 
     def __str__(self) -> str:
         return self.air_line_name

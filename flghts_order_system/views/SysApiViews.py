@@ -306,15 +306,22 @@ def api_create_multi(validatedData, instance_model, model_serializer):
         return {'error': str(e)}
         
 def api_get_object_by_username(name, instance_model, model_serializer):
+    ok_move_to(model='SysApiViews', func='api_get_object_by_username')
     try:
         obj = dal.get_object_by_username(name=name, model=instance_model)
-        if isinstance(obj, JsonResponse) and "ERROR" in obj.content.decode("utf-8"):
-            return obj
+        ok_got_back(view='dal', obj=obj)
+        check_error = validator.if_isinstance(obj) # check if no errors returned (FALSE)
+        if check_error == False:
+            ok_chek_error_is_false(model='SysApiViews')
+            try:
+                logger.info(f'O.K got obj : {obj} HTTP/1.1" 200')
+                serializer = model_serializer(obj)
+                logger.info(f'O.K {obj} object been serialized HTTP/1.1" 200')
+                return serializer.data
+            except Exception as e:
+                return error_500(e=e, model='SysApiViews')
         else:
-            logger.info(f'O.K got obj : {obj} HTTP/1.1" 200')
-            serializer = model_serializer(obj)
-            logger.info(f'O.K {obj} object been serialized HTTP/1.1" 200')
-            return serializer.data
+            return check_error_true(model='SysApiViews', func='api_get_object_by_username', obj=obj)
     except Exception as e:
         return error_500(e=e, model='SysApiViews')
         

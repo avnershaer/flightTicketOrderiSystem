@@ -13,7 +13,12 @@ def error_405(request):
 
 def error_404(e, obj, model):
     errlogger.error(f'{obj} - model {model} got ERROR:{e} NOT FOUND HTTP/1.1 404')
-    msg= JsonResponse({'status': 'ERROR NOT FOUND HTTP/1.1 404', 'datails': f'{obj} got ERROR:{e}'}, status=404)
+    msg = JsonResponse({'status': 'ERROR NOT FOUND HTTP/1.1 404', 'datails': f'{obj} got ERROR:{e}'}, status=404)
+    return msg
+
+def error_403():
+    errlogger.error('Forbidden - Unauthorized access - HTTP/1.1  403 ')
+    msg = JsonResponse({'error': 'Unauthorized access'})
     return msg
 
 def dal_error(e):
@@ -27,23 +32,23 @@ def error_500(e, model):
     return msg
 
 def ok_got_back(view, obj):
-    info = logger.info(f'OK returned from {view} view.- object:{obj} HTTP/1.1 200')
+    info = logger.info(f'OK returned from {view} view.- object:{obj} HTTP/1.1 200 OK')
     return info
 
 def ok_move_to(model, func):
-    msg =logger.info(f'O.K move to {model} model -function {func} status HTTP/1.1 200')
-    return msg
+    logger.info(f'O.K move to {model} model -function {func} status HTTP/1.1 200 OK')
+    
 
 def ok_obj_from_db(obj):
-    logger.info(f'O.K got objects from database:{obj} HTTP/1.1 200')
+    logger.info(f'O.K got objects from database:{obj} HTTP/1.1 200 OK')
     return obj
 
 def ok_status_200(obj, obj_name):
-    logger.info(f'O.K for {obj_name}  HTTP/1.1 200')
+    logger.info(f'O.K for {obj_name}  HTTP/1.1 200 OK')
     return obj
 
 def ok_chek_error_is_false(model):
-    logger.info(f'O.K check error at {model} is FALSE. status HTTP/1.1 200')
+    logger.info(f'O.K check error at {model} is FALSE. status HTTP/1.1 200 OK')
     
 
 def check_error_true(model, func, obj):
@@ -51,14 +56,14 @@ def check_error_true(model, func, obj):
     return obj
 
 def ok_status_201(obj, model):
-    logger.info(f'O.K new instance BEEN CREATED: {obj} at model {model} - HTTP/1.1 201')
+    logger.info(f'O.K new instance BEEN CREATED: {obj} at model {model} - HTTP/1.1 201 OK')
     return obj
 
 def ok_got_serialzed_data(serialized_data):
-    logger.info(f'O.K got serialzed data {serialized_data} HTTP/1.1 200')
+    logger.info(f'O.K got serialzed data {serialized_data} HTTP/1.1 200 OK')
 
 def serialzed_data_is_valid():
-    logger.info(f'O.K serialized data IS VALID HTTP/1.1 200')
+    logger.info(f'O.K serialized data IS VALID HTTP/1.1 200 OK')
 
 def serialzed_data_NOT_valid(obj):
     logger.info(f'serialized data IS NOT VALID HTTP/1.1 500')
@@ -66,17 +71,34 @@ def serialzed_data_NOT_valid(obj):
     return msg
 
 def success_jsonResponse(obj):
-    logger.info(f'O.K returning success_jsonResponse HTTP/1.1 200')
+    logger.info('O.K returning success_jsonResponse HTTP/1.1 200 OK')
     msg = JsonResponse({'status': 'success O.K HTTP/1.1 200', 'Details': obj}, status=201, safe=False)
     return msg
 
 def ok_vlidate_data(model, func):
-    logger.info(f'OK GOT VALIDATE data at model:{model} - func:{func} status HTTP/1.1 200')
+    logger.info(f'OK GOT VALIDATE data at model:{model} - func:{func}  HTTP/1.1 200 OK')
 
+def ok_auth(user):
+    logger.info(f'Authentication successful :{user} HTTP/1.1 200 OK')
+    msg = JsonResponse(f'Authentication successful for {user["name"]}', safe=False)
+    return msg
 
+def ok_logout():
+    logger.info('O.K logged out HTTP/1.1 200 OK')
+    msg = JsonResponse({'status':'logged out'})
+    return msg
 
+def already_logged_in():
+    msg = JsonResponse({'status':'user is already logged in HTTP/1.1 409'}, status=409)
+    return msg
 
+def auth_failed():
+    logger.info('Authentication failed - invalid credentials HTTP/1.1 401')
+    msg = JsonResponse({'Invalid credentials HTTP/1.1 401 ': 'Authentication failed '}, status=401)
+    return msg
 
+def session_is_active(state):
+    logger.info(f'session is {state} active')
 
 
 
