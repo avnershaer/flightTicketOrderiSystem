@@ -1,0 +1,126 @@
+add customer:
+http://127.0.0.1:8000/flight_tick_order_sys/customers   -- POST
+{
+      "user_name": "jojo",
+      "password": "jo123456",
+      "email": "jo@mail.com",
+      "cust_first_name": "joel",
+      "cust_last_name": "gad",
+      "cust_adress": "Yokneam",
+      "cust_phone_num": "04550913152",
+      "cust_credit_card_num": "743112124145678"
+    }
+
+{
+      "user_name": "dina",
+      "password": "dn123456",
+      "email": "dn@mail.com",
+      "cust_first_name": "dina",
+      "cust_last_name": "din",
+      "cust_adress": "Yokneam",
+      "cust_phone_num": "021550913152",
+      "cust_credit_card_num": "8519942131"
+    }
+
+    {
+      "user_name": "Dingo",
+      "password": "din123456",
+      "email": "dingo@mail.com",
+      "cust_first_name": "din",
+      "cust_last_name": "gon",
+      "cust_adress": "haifa",
+      "cust_phone_num": "04987913152",
+      "cust_credit_card_num": "74315236578"
+    }
+
+
+
+    
+
+cust login:
+http://127.0.0.1:8000/flight_tick_order_sys/login  -- POST
+{
+      "username": "jojo",
+      "password": "jo123456"
+    }
+
+
+update cust:
+http://127.0.0.1:8000/flight_tick_order_sys/customer/***cust_id***  -- PUT
+
+{
+      "cust_first_name": "joely",
+      "cust_last_name": "gadot",
+      "cust_adress": "Yokneam",
+      "cust_phone_num": "04550913152",
+      "cust_credit_card_num": "743112124145678"
+}
+
+
+
+
+
+
+ad admin:
+http://127.0.0.1:8000/flight_tick_order_sys/administrators
+
+{
+      "user_name": "admin1",
+      "password": "ad123456",
+      "email": "ad1@mail.com",
+      "admin_first_name": "admino",
+      "admin_last_name": "adm"
+    }
+
+
+login admin:
+
+http://127.0.0.1:8000/flight_tick_order_sys/login  -- POST
+{
+      "user_name": "admin1",
+      "password": "ad123456"
+    }
+
+update admin:
+http://127.0.0.1:8000/flight_tick_order_sys/administrator/***admin_id***   -- PUT
+
+{
+   
+      "admin_first_name": "adminoni",
+      "admin_last_name": "adman"
+}
+
+
+
+add airline:
+http://127.0.0.1:8000/flight_tick_order_sys/airlines   -- POST
+
+{
+      "user_name": "fake_air_line",
+      "password": "air123456",
+      "email": "air@mail.com",
+      "air_line_name": "fake air line",
+      "company_logo": "",
+      "country_id": 8
+    }
+
+login airline:
+http://127.0.0.1:8000/flight_tick_order_sys/airline/***airline_id***   -- PUT
+{
+      "username": "fake_air_line",
+      "password": "air123456"
+}
+
+
+update flight:
+
+
+{
+    
+      "departure_time": "2023-07-11T16:39:14Z",
+      "landing_time": "2023-07-12T04:43:16Z",
+      "remaining_tickects": 5,
+  
+      "origin_country_id": 4,
+      "destination_country_id": 5
+    }

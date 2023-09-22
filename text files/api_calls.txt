@@ -1,0 +1,208 @@
+all api calls
+
+===================
+  *GET* requests:
+===================
+
+logout:
+http://127.0.0.1:8000/flight_tick_order_sys/logout/ 
+
+get list of all flights details:
+http://127.0.0.1:8000/flight_tick_order_sys/flights/
+
+get flight details by the flight id:
+http://127.0.0.1:8000/flight_tick_order_sys/flight/**flight_id**/
+
+get list of flights details by the id of the origin country:
+http://127.0.0.1:8000/flight_tick_order_sys/get_flights_by_origin_country_id/**origin_country_id**/
+
+get list of flights details by the id of the destination country:
+http://127.0.0.1:8000/flight_tick_order_sys/get_flights_by_destination_country_id/**destination_country_id**/
+
+get list of flights details by the departure date:
+http://127.0.0.1:8000/flight_tick_order_sys/get_flights_by_departure_date/**departure_date:yyyy-mm-dd**/
+
+get list of flights details by the landing date: *************************************************
+http://127.0.0.1:8000/flight_tick_order_sys/get_flights_by_landing_date/**landing_date:yyyy-mm-dd**/
+
+get list of flights details by air line_id:
+http://127.0.0.1:8000/flight_tick_order_sys/get_flights_by_air_line_id/**air_line_id**/
+
+get list of next 12 hours arrival flights details by the destination_country_id:**********************************
+http://127.0.0.1:8000/flight_tick_order_sys/get_arrival_flights_by_country_id/**destination_country_id**/
+
+get list of next 12 hours departure flights details by the origin_country id:*******************************
+http://127.0.0.1:8000/flight_tick_order_sys/get_departure_flights_by_country_id/**origin_country_id**/
+
+get list of all airlines details:
+http://127.0.0.1:8000/flight_tick_order_sys/airlines/
+
+get airline details by air_line_id:
+http://127.0.0.1:8000/flight_tick_order_sys/airline_by_id/**air_line_id**/
+
+get airline details by the country_id of airline:
+http://127.0.0.1:8000/flight_tick_order_sys/get_airline_by_country_id/**country_id**/
+
+get list of all countries in system:
+http://127.0.0.1:8000/flight_tick_order_sys/countries/
+
+get country details by the country_id:
+http://127.0.0.1:8000/flight_tick_order_sys/country_by_id/**country_id**
+
+get list of flight tickets belonging to logged in customer by the cust_id:*****************
+http://127.0.0.1:8000/flight_tick_order_sys/get_my_tickets/
+
+get list of flights belonging to logged in airline by the air_line_id:***************
+http://127.0.0.1:8000/flight_tick_order_sys/get_my_flights/
+
+get list of all customers:
+http://127.0.0.1:8000/flight_tick_order_sys/customers/**********
+
+get list of all tickets in the system of all airlines:***********
+http://127.0.0.1:8000/flight_tick_order_sys/get_all_tickets/
+
+get list of all tickets in the system of all administrators:***********
+http://127.0.0.1:8000/flight_tick_order_sys/administrators_list/
+
+
+====================
+  *POST* requests:
+====================
+
+start login process:
+http://127.0.0.1:8000/flight_tick_order_sys/login
+
+{
+      "username": " [user_name] ",
+      "password": " [password] "
+    }
+
+
+start customer register process for anonimous user:
+http://127.0.0.1:8000/flight_tick_order_sys/add_customer/
+
+{
+      "user_name": " [user_name] ",
+      "password": " [password] ",
+      "email": " [email] ",
+      "cust_first_name": " [cust_first_name] ",
+      "cust_last_name": " [cust_last_name] ",
+      "cust_adress": " [cust_adress] ",
+      "cust_phone_num":  int[cust_phone_num] ,
+      "cust_credit_card_num":  int[cust_credit_card_num] 
+    }
+
+
+start ticket ordering process for logged in customer:
+http://127.0.0.1:8000/flight_tick_order_sys/tickets/
+
+{
+      "flight_id": int[flight_id]    
+}
+
+
+start proccesing flight adding for logged in airline:
+http://127.0.0.1:8000/flight_tick_order_sys/add_flight/
+
+{
+      "departure_time": ["departure_time: yyyy-mm-ddThh:mm:secZ "] for example:(2023-10-11T16:39:14Z)
+      "landing_time": ["landing_time: yyyy-mm-ddThh:mm:secZ "] for example: (2023-10-12T04:43:16Z)
+      "remaining_tickects": int[remaining_tickects],
+      "origin_country_id": int[origin_country_id],
+      "destination_country_id": int[destination_country_id]
+    }
+
+
+start proccesing airline adding:
+http://127.0.0.1:8000/flight_tick_order_sys/add_airline/
+
+{
+      "user_name": " [user_name]",
+      "password": "[password]",
+      "email": "[email]",
+      "air_line_name": "[air_line_name]",
+      "company_logo": "[image path of company_logo]",
+      "country_id": int[country_id]
+    }
+
+start proccesing administrator adding:
+http://127.0.0.1:8000/flight_tick_order_sys/administrators/
+
+{
+      "user_name": "[user_name]",
+      "password": "[password]",
+      "email": "[email]",
+      "admin_first_name": "[admin_first_name]",
+      "admin_last_name": "[admin_last_name]"
+    }
+
+
+
+
+===================
+  *PUT* requests:  
+===================
+
+update customer by cust_id:
+http://127.0.0.1:8000/flight_tick_order_sys/customer/**customer_id**
+
+{
+      "cust_first_name": " [cust_first_name] ",
+      "cust_last_name": " [cust_last_name] ",
+      "cust_adress": " [cust_adress] ",
+      "cust_phone_num": int[cust_phone_num] ,
+      "cust_credit_card_num": int[cust_credit_card_num] 
+    }
+
+
+airline's details update for the logged in airline:
+http://127.0.0.1:8000/flight_tick_order_sys/airline/**air_line_id**
+
+{
+      "air_line_name": " [air_line_name] ",
+      "company_logo": " [logo image path] ",
+      "country_id": int[country_id]
+    }
+
+
+start proccesing flight updating for logged in airline:
+http://127.0.0.1:8000/flight_tick_order_sys/update_flight/flight_id
+
+{
+      "departure_time": ["departure_time: yyyy-mm-ddThh:mm:secZ "] for example:(2023-10-11T16:39:14Z)
+      "landing_time": ["landing_time: yyyy-mm-ddThh:mm:secZ "] for example: (2023-10-12T04:43:16Z)
+      "remaining_tickects": int[remaining_tickects],
+      "origin_country_id": int[origin_country_id],
+      "destination_country_id": int[destination_country_id]
+    }
+
+
+start proccesing administrator updating by admin_id:
+http://127.0.0.1:8000/flight_tick_order_sys/administrator/**admin_id**
+
+{
+    
+      "admin_first_name": "[admin_first_name]",
+      "admin_last_name": "[admin_last_name]"
+    }
+
+
+
+======================
+  *DELETE* requests:
+======================
+
+ticket deleting for logged in customer:
+http://127.0.0.1:8000/flight_tick_order_sys/ticket/**ticket_id**
+
+flight deleting for logged in airline:
+http://127.0.0.1:8000/flight_tick_order_sys/remove_flight/**flight_id**
+
+airline deleting:
+http://127.0.0.1:8000/flight_tick_order_sys/remove_airline/**airline_user_id**
+
+customer deleting:
+http://127.0.0.1:8000/flight_tick_order_sys/remove_customer/**customer_user_id**
+
+administrator deleting:
+http://127.0.0.1:8000/flight_tick_order_sys/remove_administrator/**admin_id_user_id**

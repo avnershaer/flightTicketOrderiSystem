@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import mysql.connector
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -49,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'flight_tickets_order_system.urls'
@@ -77,12 +80,18 @@ WSGI_APPLICATION = 'flight_tickets_order_system.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'mysql.connector.django',
         'NAME': 'Flights_Order_System',
         'USER': 'admin',
         'PASSWORD': '123456',
         'HOST': '127.0.0.1',
         'PORT': '3306',
+        #'ENGINE': 'django.db.backends.mysql',
+        #'NAME': 'django-mysql',
+        #'USER': 'root',
+        #'PASSWORD': 'my4321',
+        #'HOST': '127.0.0.1',
+        #'PORT': '13306',
     }
 }
 #DATABASES = {
@@ -117,35 +126,57 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # Set the session to expire when user browser is closed
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False# Set the session to expire when user browser is closed
+SESSION_COOKIE_SECURE = True
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+SESSION_COOKIE_NAME = 'sessionid'
+SESSION_COOKIE_SAMESITE = 'None'
 
-LOGGINSG = {
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_NAME = "csrftoken"
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_HEADER_NAME = "HTTP_X_CSRFTOKEN"
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000', 'http://127.0.0.1:3000', 'http://192.168.1.248:300'
+]
+CSRF_ALLOWED_ORIGINS = [
+    'http://localhost:3000', 'http://127.0.0.1:3000', 'http://192.168.1.248:300'
+]
+
+LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    #'handlers': {
-    #    'file': {
-    #        'level': 'DEBUG',
-    #        'class': 'logging.FileHandler',
-    #        'filename': 'logs.log',
-    #        'formatter': 'verbose',
-    #    },
-    #    'console': {
-    #        'level': 'DEBUG',
-    #        'class': 'logging.StreamHandler',
-    #        'formatter': 'verbose',
-    #    },
-    #},
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'loggers/logs.log',
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
     'formatters': {
         'verbose': {
             'format': '%(asctime)s - %(levelname)s - %(message)s',
         },
     },
-    #'root': {
-    #    'handlers': ['file', '
-    # console'],
-    #    'level': 'DEBUG',
-    #},
+    'loggers': {
+        '': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
 }
+    
+
+
+
 
 DEFAULT_LOGGER = 'flights_order_system.loggers.lggr'
 
@@ -170,3 +201,36 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+
+
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000', 'http://127.0.0.1:3000', 'http://192.168.1.248:300'
+]
+CORS_ALLOW_HEADERS = [
+    
+    'message',
+    'name',
+    'role',
+    'id',
+    'Content-Type', 
+    'X-CSRFTOKEN',
+    'origin',
+    'x-requested-with',
+    'accept'
+
+]
+
+# allowing common HTTP methods
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS',  
+]

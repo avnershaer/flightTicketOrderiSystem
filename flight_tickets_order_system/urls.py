@@ -21,5 +21,5 @@ urlpatterns = [
 
     path('admin/', admin.site.urls),
     path('flight_tick_order_sys/', include('flghts_order_system.urls', namespace='flghts_order_system')),
-
+          
 ]
